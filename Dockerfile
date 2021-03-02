@@ -41,7 +41,13 @@ RUN chown 1000:1000 /home/jenkins
 RUN export IMG_SHA256="cc9bf08794353ef57b400d32cd1065765253166b0a09fba360d927cfbd158088" \
     && curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.11/img-linux-amd64" -o "/usr/bin/docker" \
 	&& echo "${IMG_SHA256}  /usr/bin/docker" | sha256sum -c - \
-	&& chmod a+x "/usr/bin/docker"
+	&& chmod a+x "/usr/bin/docker" \
+    && export IMG_DISABLE_EMBEDDED_RUNC=1 \
+    && chmod 4755 /usr/bin/newuidmap /usr/bin/newgidmap \
+    && echo "root:100000:65536" > /etc/subgid \
+    && echo "root:100000:65536" > /etc/subuid \
+    && mkdir -p /run/runc && chmod 777 /run/runc
+
 ENV JENKINS_USER=jenkins
 
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq

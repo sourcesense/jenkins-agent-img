@@ -33,6 +33,8 @@ WORKDIR /app
 COPY dep-bootstrap.sh .
 RUN chmod +x ./dep-bootstrap.sh
 
+ENV USER=jenkins
+USER root
 RUN useradd -u 1000 -s /bin/bash jenkins
 RUN mkdir -p /home/jenkins
 RUN chown 1000:1000 /home/jenkins

@@ -43,12 +43,10 @@ RUN export IMG_SHA256="cc9bf08794353ef57b400d32cd1065765253166b0a09fba360d927cfb
 	&& echo "${IMG_SHA256}  /usr/bin/docker" | sha256sum -c - \
 	&& chmod a+x "/usr/bin/docker" \
     && export IMG_DISABLE_EMBEDDED_RUNC=1 \
-    && chmod 4755 /usr/bin/newuidmap /usr/bin/newgidmap \
     && echo "root:100000:65536" > /etc/subgid \
     && echo "root:100000:65536" > /etc/subuid \
     && setcap cap_setuid+eip /usr/bin/newuidmap \
     && setcap cap_setgid+eip /usr/bin/newgidmap \
-    && setcap cap_sys_admin+eip /usr/bin/newuidmap /usr/bin/newgidmap \
     && mkdir -p /run/runc && chmod 777 /run/runc
 
 ENV JENKINS_USER=jenkins

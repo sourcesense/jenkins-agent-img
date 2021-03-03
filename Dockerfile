@@ -25,7 +25,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     jq \
     xmlstarlet \
     uidmap \
-    libseccomp-dev \
+    libseccomp-dev \ 
+    libfuse3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

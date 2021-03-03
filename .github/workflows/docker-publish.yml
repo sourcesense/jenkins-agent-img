@@ -52,18 +52,18 @@ jobs:
           echo "::set-output name=version::$VERSION"
           
       - name: Get image id
-        id: get_id
+        id: get_image_id
         run: |
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          echo "::set-output name=version::$IMAGE_ID"
+          echo "::set-output name=image_id::$IMAGE_ID"
           
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ steps.get_version.outputs.version }}
+          tags: ghcr.io/${{ steps.get_image_id.outputs.image_id }}:${{ steps.get_version.outputs.version }}
 
 

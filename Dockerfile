@@ -13,23 +13,43 @@ ARG YQ_BINARY="yq_${OS}_$ARCH"
 RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
-FROM ubuntu:focal
+FROM ubuntu:groovy as fuse-builder
+WORKDIR /build
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        libc6-dev gcc g++ make automake autoconf clang pkgconf libfuse3-dev git \
+        ca-certificates \
+    && update-ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.4.0
+RUN cd fuse-overlayfs && \
+    sh autogen.sh && \
+    LIBS="-ldl" LDFLAGS="-static" ./configure --prefix /usr && \
+    make
+
+
+FROM ubuntu:groovy
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     curl \
     git \
     jq \
     xmlstarlet \
     uidmap \
-    libseccomp-dev \ 
-    libfuse3-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libseccomp-dev \
+    fuse3 \
+    && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+RUN mknod /dev/fuse -m 0666 c 10 229
 
 COPY dep-bootstrap.sh .
 RUN chmod +x ./dep-bootstrap.sh
@@ -54,6 +74,7 @@ RUN export IMG_SHA256="cc9bf08794353ef57b400d32cd1065765253166b0a09fba360d927cfb
 ENV JENKINS_USER=jenkins
 
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
+COPY --from=fuse-builder --chown=1000:1000 /build/fuse-overlayfs/fuse-overlayfs /usr/bin/fuse-overlayfs
 
 USER 1000
 

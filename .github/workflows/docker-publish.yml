@@ -38,7 +38,7 @@ jobs:
         run: echo ${{ steps.buildx.outputs.platforms }}
         
       - name: Get version
-        id: get_ersion
+        id: get_version
         run: |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')

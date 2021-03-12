@@ -1,6 +1,6 @@
 FROM golang:1.13-alpine AS img
 
-RUN apk add --no-cache \
+RUN apk add --update-cache \
     bash \
     build-base \
     gcc \

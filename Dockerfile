@@ -1,13 +1,13 @@
 FROM golang:1.13-alpine AS img
 
-RUN apk add --update-cache \
-    bash \
-    build-base \
-    gcc \
-    git \
-    libseccomp-dev \
-    linux-headers \
-    make \
+RUN apk add --no-cache \
+	bash \
+	build-base \
+	gcc \
+	git \
+	libseccomp-dev \
+	linux-headers \
+	make \
     ca-certificates
 
 RUN go get github.com/go-bindata/go-bindata/go-bindata

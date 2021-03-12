@@ -1,3 +1,21 @@
+FROM golang:1.13-alpine AS img
+
+RUN apk add --no-cache \
+    bash \
+    build-base \
+    gcc \
+    git \
+    libseccomp-dev \
+    linux-headers \
+    make \
+    ca-certificates
+
+RUN go get github.com/go-bindata/go-bindata/go-bindata
+WORKDIR /
+RUN git clone https://github.com/EcoMind/img.git -b img-load
+WORKDIR /img
+RUN make static && mv img /usr/bin/img
+
 FROM alpine:3.12.4 as curl
 
 WORKDIR /
@@ -12,13 +30,6 @@ ARG YQ_VERSION="v4.6.0"
 ARG YQ_BINARY="yq_${OS}_$ARCH"
 RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
-
-FROM curl as img-downloader
-
-ARG IMG_SHA256="cc9bf08794353ef57b400d32cd1065765253166b0a09fba360d927cfbd158088"
-RUN curl -fSL "https://github.com/genuinetools/img/releases/download/v0.5.11/img-linux-amd64" -o "/usr/bin/docker" \
-	&& ( echo "${IMG_SHA256}  /usr/bin/docker" | sha256sum -c - ) \
-	&& chmod a+x "/usr/bin/docker"
 
 
 FROM ubuntu:groovy-20210115 as fuse-downloader
@@ -84,11 +95,12 @@ RUN export IMG_DISABLE_EMBEDDED_RUNC=1 \
 
 ENV JENKINS_USER=jenkins
 
-COPY --from=img-downloader --chown=1000:1000 /usr/bin/docker /usr/bin/docker
+COPY --from=img --chown=1000:1000 /usr/bin/img /usr/bin/img
 COPY --from=yq-downloader --chown=1000:1000 /usr/local/bin/yq /usr/local/bin/yq
 COPY --from=fuse-builder --chown=1000:1000 /build/fuse-overlayfs/fuse-overlayfs /usr/bin/fuse-overlayfs
+RUN ["ln", "-sf", "/usr/bin/img", "/usr/bin/docker"]
 
 USER 1000
 
-RUN ./dep-bootstrap.sh 0.4.3 install
+RUN ./dep-bootstrap.sh 0.5.1 install
 

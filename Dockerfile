@@ -12,11 +12,11 @@ RUN apk add --no-cache \
 
 RUN go get github.com/go-bindata/go-bindata/go-bindata
 WORKDIR /
-RUN git clone https://github.com/EcoMind/img.git -b v0.6.0
+RUN git clone https://github.com/EcoMind/img.git -b v0.7.0
 WORKDIR /img
 RUN make static && mv img /usr/bin/img
 
-FROM alpine:3.12.4 as curl
+FROM alpine:3.15.4 as curl
 
 WORKDIR /
 
@@ -26,13 +26,13 @@ FROM curl as yq-downloader
 
 ARG OS=${TARGETOS:-linux}
 ARG ARCH=${TARGETARCH:-amd64}
-ARG YQ_VERSION="v4.6.0"
+ARG YQ_VERSION="v4.25.1"
 ARG YQ_BINARY="yq_${OS}_$ARCH"
 RUN wget "https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/$YQ_BINARY" -O /usr/local/bin/yq && \
     chmod +x /usr/local/bin/yq
 
 
-FROM ubuntu:groovy-20210115 as fuse-downloader
+FROM ubuntu:focal-20220426 as fuse-downloader
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -41,9 +41,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
-RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.4.0
+RUN git clone https://github.com/containers/fuse-overlayfs.git -b v1.8.2
 
-FROM ubuntu:groovy-20210115 as fuse-builder
+FROM ubuntu:focal-20220426 as fuse-builder
 WORKDIR /build
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
@@ -57,7 +57,7 @@ RUN cd fuse-overlayfs && \
     make
 
 
-FROM ubuntu:groovy-20210115
+FROM ubuntu:focal-20220426
 
 RUN apt-get update && \
     apt-get install -y software-properties-common && \

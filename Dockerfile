@@ -12,7 +12,7 @@ RUN apk add --no-cache \
 
 RUN go get github.com/go-bindata/go-bindata/go-bindata
 WORKDIR /
-RUN git clone https://github.com/EcoMind/img.git -b v0.7.0
+RUN git clone https://github.com/EcoMind/img.git -b v0.8.0
 WORKDIR /img
 RUN make static && mv img /usr/bin/img
 
